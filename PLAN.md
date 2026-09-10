@@ -35,7 +35,10 @@
 | --- | --- | --- |
 | 3D 预览 | `three`、`@react-three/fiber`、`@react-three/drei` | 渲染 STL/GLB/3MF 模型 |
 | 数据校验 | `zod` | 表单与 API 输入校验 |
-| 数据库 ORM | `drizzle-orm` + `drizzle-kit` | 模型、订单持久化（可选，MVP 初期可用静态 JSON） |
+| 数据库 ORM | `drizzle-orm` + `drizzle-kit` | 用户、订单持久化（**MVP 必选**，因需存账号与订单） |
+| 数据库 | Vercel Postgres（底层为 Neon） | 生产数据库 |
+| 认证 | `next-auth`（Auth.js v5，Credentials Provider） | 账号名+密码登录 |
+| 密码哈希 | `bcryptjs` 或 `argon2` | 存储密码前哈希 |
 | 状态管理 | `zustand`（可选） | 购物车/选型状态 |
 
 ---
@@ -92,6 +95,15 @@ src/
 ## 5. 数据模型（初版）
 
 ```ts
+// 用户
+interface User {
+  id: string;
+  username: string;         // 账号名，唯一
+  phone: string;            // 手机号，唯一（注册必填，用于联系）
+  passwordHash: string;     // bcrypt/argon2 哈希，不明文存储
+  createdAt: string;
+}
+
 // 模型
 interface Model {
   id: string;
@@ -108,6 +120,7 @@ interface Model {
 // 订单
 interface Order {
   id: string;
+  userId: string;           // 关联下单用户
   modelId: string;
   options: {
     material: string;       // PLA / PETG / ...
@@ -128,30 +141,36 @@ interface Order {
 
 ### 阶段 0：命名与初始化（0.5 天）
 - [ ] 确定产品名，更新 `package.json` name、首页标题、README
-- [ ] 安装 3D 与校验依赖
+- [ ] 安装 3D、校验、认证、数据库依赖
+
+### 阶段 0.5：账号系统（1–2 天）
+- [ ] Vercel Postgres 接入 + Drizzle schema（`users` 表，username / phone 唯一约束）
+- [ ] Auth.js v5 Credentials Provider 配置，密码 bcrypt/argon2 哈希
+- [ ] 注册页（账号名 + 手机号 + 密码）、登录页（账号名 + 密码）
+- [ ] session 保护下单接口，登录后可查「我的订单」
 
 ### 阶段 1：3D 预览能力（1–2 天）
-- [ ] 封装 `ModelViewer` 组件（加载 STL/GLB，支持旋转/缩放/平移）
+- [ ] 封装 `ModelViewer` 组件（按扩展名分发加载 STL / GLB / 3MF，支持旋转/缩放/平移）
 - [ ] 在详情页跑通一个示例模型的预览
 
 ### 阶段 2：模型库（2–3 天）
-- [ ] 定义 `Model` 类型与数据源（MVP 用静态 JSON，后续接数据库）
+- [ ] 定义 `Model` 类型与数据源（模型元数据可用静态 JSON，用户/订单用数据库）
 - [ ] 模型列表页 + 卡片 + 筛选器
 - [ ] 模型详情页（预览 + 基本信息 + 授权提示）
 
 ### 阶段 3：下单流程（2–3 天）
 - [ ] 选型组件（材质/颜色/尺寸/数量）
-- [ ] 报价计算 `pricing.ts`
+- [ ] 报价计算 `pricing.ts`：`起步价 2 元 + 重量(g) × 0.5 元/g`
 - [ ] 下单表单 + zod 校验
 - [ ] `POST /api/orders` 创建订单，订单查询页
 
 ### 阶段 4：后台与运营（视情况）
 - [ ] 简易订单管理（查看/更新状态）
-- [ ] 数据库接入（Drizzle）
 
 ### 阶段 5：上线（1 天）
-- [ ] 部署到 Vercel
-- [ ] 环境变量、域名配置
+- [ ] 部署到 Vercel + Vercel Postgres
+- [ ] 绑定自定义域名（国内域名需已备案；MVP 接受 Vercel 国内访问一般，上线前再评估是否迁国内平台）
+- [ ] 环境变量配置（数据库连接、Auth secret）
 
 ---
 
@@ -161,18 +180,33 @@ interface Order {
 | --- | --- | --- |
 | **模型授权** | MakerWorld 模型多为 CC 协议，部分明确禁止商用 | 逐个核对 `license`，仅收录允许商用的模型；`commercialAllowed` 字段做拦截 |
 | 品牌关联 | 避免使用「拓竹 / Bambu」字样宣传 | 命名与文案不碰对方商标 |
-| 报价准确性 | 打印耗时/耗材难精确预估 | 初期用「体积 × 材料单价 + 基础费」的粗略模型，人工二次确认 |
+| 报价准确性 | 打印耗时/耗材难精确预估 | 初期用「起步价 2 元 + 重量(g) × 0.5 元/g」的粗略模型，人工二次确认 |
 | 支付合规 | 涉及收款 | MVP 先走线下/人工确认，正式收款再接第三方支付 |
+| 国内访问 | Vercel 在国内访问不稳，绑国内域名需备案且不解决回源慢 | MVP 先用 Vercel + 自定义域名，上线前评估是否迁国内平台（阿里云/腾讯云）|
+| 密码安全 | 自管账号密码 | 密码必须 bcrypt/argon2 哈希存储，禁止明文；走 HTTPS |
 
 ---
 
 ## 8. 待用户确认的决策点
 
-1. 面向国内还是海外用户？（影响支付、物流、语言）
-2. MVP 是否需要在线支付，还是先人工确认收款？
-3. 模型库初期规模（几十个精选 vs 大量导入）？
-4. 是否需要用户账号系统，还是匿名下单 + 手机号查询即可？
-5. 最终产品名确认（PickPrint / PrintOrder / 其他）。
+1. 面向国内还是海外用户？（影响支付、物流、语言） 国内
+2. MVP 是否需要在线支付，还是先人工确认收款？ 否
+3. 模型库初期规模（几十个精选 vs 大量导入）？ 精选
+4. 是否需要用户账号系统，还是匿名下单 + 手机号查询即可？是，只需账号名和密码和手机号
+5. 最终产品名确认（PickPrint / PrintOrder / 其他）。PickPrint
+
+### 第二轮确认（已定）
+
+6. 认证方案：**Auth.js v5（Credentials Provider）**，密码哈希存储。
+7. 唯一性：**账号名唯一 + 手机号唯一** 双约束。
+8. 登录方式：**账号名 + 密码登录**；手机号为注册必填项（唯一 + 联系用），不作登录凭证。
+9. 订单查询：登录后查看「我的订单」（Order 关联 `userId`）。
+10. 数据库：**Vercel Postgres**（底层 Neon），MVP 必选（存用户与订单）。
+11. 部署：**Vercel + 自定义域名**；国内域名需备案；上线前再评估是否迁国内平台。
+12. 定价：**起步价 2 元 + 重量(g) × 0.5 元/g**。
+13. 3D 预览格式：支持 **STL / GLB / 3MF**（`ModelViewer` 按扩展名分发加载）。
+14. 联系方式：下单时 `contact.phone` 默认取账号手机号，**允许单独修改**。
+15. 材质定价：MVP **统一 0.5 元/g**，不区分 PLA/PETG，后续再分材质单价。
 
 ---
 
