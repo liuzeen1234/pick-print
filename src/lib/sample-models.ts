@@ -6,7 +6,7 @@ export interface SampleModel {
   title: string;
   description: string;
   src: string;
-  format: "stl" | "glb" | "gltf";
+  format: "stl" | "glb" | "gltf" | "3mf";
 }
 
 export const SAMPLE_MODELS: SampleModel[] = [
@@ -16,6 +16,13 @@ export const SAMPLE_MODELS: SampleModel[] = [
     description: "小巧的本地 STL 示例（无内嵌材质，使用统一渲染色）。",
     src: "/sample-models/godox-x5-cap.stl",
     format: "stl",
+  },
+  {
+    id: "godox-x5-cap-3mf",
+    title: "神牛 X5 引闪器保护盖（3MF）",
+    description: "3MF 格式示例，验证 3MFLoader 加载与材质/法线兜底处理。",
+    src: "/sample-models/godox-x5-cap.3mf",
+    format: "3mf",
   },
   {
     id: "mouthwash-holder-v2",

@@ -140,8 +140,9 @@ interface Order {
 ## 6. 里程碑与任务拆解
 
 ### 阶段 0：命名与初始化（0.5 天）
-- [ ] 确定产品名，更新 `package.json` name、首页标题、README
-- [ ] 安装 3D、校验、认证、数据库依赖
+- [x] 确定产品名，更新 `package.json` name、首页标题、README
+- [x] 安装 3D、校验依赖（`three` / `@react-three/*` / `zod` 已装）
+- [ ] 安装认证、数据库依赖（`next-auth` / `drizzle` / `bcryptjs`，阶段 0.5 用）
 
 ### 阶段 0.5：账号系统（1–2 天）
 - [ ] Vercel Postgres 接入 + Drizzle schema（`users` 表，username / phone 唯一约束）
@@ -150,8 +151,12 @@ interface Order {
 - [ ] session 保护下单接口，登录后可查「我的订单」
 
 ### 阶段 1：3D 预览能力（1–2 天）
-- [ ] 封装 `ModelViewer` 组件（按扩展名分发加载 STL / GLB / 3MF，支持旋转/缩放/平移）
-- [ ] 在详情页跑通一个示例模型的预览
+- [x] 封装 `ModelViewer` 组件（按扩展名分发加载 STL / GLB / GLTF / 3MF，支持旋转/缩放/平移）
+- [x] 在详情页跑通示例模型的预览（`/models/[id]` + 本地示例数据）
+- [x] 导入 3MF 示例（`神牛x5引闪器保护盖.3mf` → `public/sample-models/godox-x5-cap.3mf`）
+
+> **本地示例模型源目录**：`/Users/xiaoming/Documents/3D打印`
+> 后续需要更多示例模型时从此目录拉取，复制到 `public/sample-models/` 并在 `src/lib/sample-models.ts` 登记（文件名建议用 ASCII，避免中文/空格的 URL 编码问题）。
 
 ### 阶段 2：模型库（2–3 天）
 - [ ] 定义 `Model` 类型与数据源（模型元数据可用静态 JSON，用户/订单用数据库）

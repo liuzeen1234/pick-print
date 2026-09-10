@@ -4,10 +4,11 @@ import { Suspense, useMemo } from "react";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { Bounds, Center, OrbitControls, useGLTF } from "@react-three/drei";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
+import { ThreeMFLoader } from "three/examples/jsm/loaders/3MFLoader.js";
 import * as THREE from "three";
 import { cn } from "@/lib/utils";
 
-type ModelFormat = "stl" | "glb" | "gltf";
+type ModelFormat = "stl" | "glb" | "gltf" | "3mf";
 
 export interface ModelViewerProps {
   /** 模型文件地址（STL / GLB / GLTF） */
@@ -24,6 +25,7 @@ function inferFormat(src: string): ModelFormat {
   if (clean.endsWith(".stl")) return "stl";
   if (clean.endsWith(".glb")) return "glb";
   if (clean.endsWith(".gltf")) return "gltf";
+  if (clean.endsWith(".3mf")) return "3mf";
   // 默认按 glb 处理
   return "glb";
 }
@@ -64,6 +66,43 @@ function GltfModel({ src }: { src: string }) {
   );
 }
 
+/** 3MF 模型：拓竹社区主力格式，加载为 Group。部分文件缺材质/法线，做兜底处理。 */
+function ThreeMfModel({ src, color }: { src: string; color: string }) {
+  const group = useLoader(ThreeMFLoader, src);
+
+  const prepared = useMemo(() => {
+    const fallbackMaterial = new THREE.MeshStandardMaterial({
+      color,
+      metalness: 0.05,
+      roughness: 0.65,
+    });
+
+    group.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        // 缺法线会导致光照全黑，强制重算
+        if (!child.geometry.attributes.normal) {
+          child.geometry.computeVertexNormals();
+        }
+        // 缺材质时套用统一渲染色
+        const hasMaterial = Array.isArray(child.material)
+          ? child.material.length > 0
+          : Boolean(child.material);
+        if (!hasMaterial) {
+          child.material = fallbackMaterial;
+        }
+      }
+    });
+
+    return group;
+  }, [group, color]);
+
+  return (
+    <Center>
+      <primitive object={prepared} />
+    </Center>
+  );
+}
+
 function ModelContent({
   src,
   format,
@@ -76,12 +115,15 @@ function ModelContent({
   if (format === "stl") {
     return <StlModel src={src} color={color} />;
   }
+  if (format === "3mf") {
+    return <ThreeMfModel src={src} color={color} />;
+  }
   return <GltfModel src={src} />;
 }
 
 /**
  * 3D 模型预览组件。
- * - 支持 STL / GLB / GLTF
+ * - 支持 STL / GLB / GLTF / 3MF
  * - 旋转（左键）、缩放（滚轮）、平移（右键）
  * - 自动居中并适配视野
  * - 使用自带灯光，不依赖外部 HDR 环境贴图
