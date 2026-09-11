@@ -15,6 +15,8 @@ export const env = {
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   // 服务端专用
   apiBaseUrl: process.env.API_BASE_URL ?? "",
+  databaseUrl: process.env.DATABASE_URL ?? "",
+  authSecret: process.env.AUTH_SECRET ?? "",
   isProd: process.env.NODE_ENV === "production",
 };
 

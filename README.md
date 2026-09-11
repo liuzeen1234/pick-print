@@ -13,14 +13,27 @@
 - **样式**：Tailwind CSS 3.4
 - **3D 预览**：three.js + @react-three/fiber + @react-three/drei（支持 STL / GLB / GLTF / 3MF）
 - **校验**：zod
+- **认证**：Auth.js v5（Credentials Provider，账号名 + 密码），bcrypt 哈希
+- **数据库**：Postgres（Vercel Postgres / Neon）+ Drizzle ORM
 - **测试**：Vitest + Testing Library
 
 ## 本地开发
 
 ```bash
 npm install
-npm run dev        # 启动开发服务器 http://localhost:3000
+cp .env.example .env.local   # 填入 DATABASE_URL、AUTH_SECRET
+npx auth secret              # 可用于生成 AUTH_SECRET
+npm run db:migrate           # 建表（需先配好 DATABASE_URL）
+npm run dev                  # 启动开发服务器 http://localhost:3000
 ```
+
+### 环境变量
+
+| 变量 | 说明 |
+| --- | --- |
+| `DATABASE_URL` | Postgres 连接串（Vercel Postgres / Neon） |
+| `AUTH_SECRET` | Auth.js 会话加密密钥（`npx auth secret` 生成） |
+| `NEXT_PUBLIC_SITE_URL` | 站点基础地址 |
 
 ## 常用脚本
 
@@ -33,6 +46,34 @@ npm run dev        # 启动开发服务器 http://localhost:3000
 | `npm run typecheck` | TypeScript 类型检查 |
 | `npm run test` | 运行测试（单次） |
 | `npm run test:watch` | 监听模式运行测试 |
+| `npm run db:generate` | 根据 schema 生成迁移 |
+| `npm run db:migrate` | 应用迁移到数据库 |
+| `npm run db:push` | 直接同步 schema（开发用） |
+
+## 账号系统
+
+Auth.js v5 + Credentials Provider，账号名 + 密码登录，密码经 bcrypt 哈希存储。
+
+- 注册：`/register`（账号名 + 手机号 + 密码，账号名与手机号均唯一）
+- 登录：`/login`（账号名 + 密码）
+- 我的订单：`/orders`（需登录，未登录跳转登录页）
+
+用户表定义在 `src/lib/db/schema.ts`，迁移文件在 `drizzle/`。
+
+### 本地数据库（Docker）
+
+本地开发用 `scripts/db-local.sh` 管理一个带持久化卷的 Postgres：
+
+```bash
+bash scripts/db-local.sh up      # 启动（数据持久化到命名卷 pickprint-pgdata）
+npm run db:migrate               # 首次使用建表
+bash scripts/db-local.sh psql    # 进入 psql
+bash scripts/db-local.sh down    # 停止（数据保留）
+bash scripts/db-local.sh reset   # 删除容器和数据卷（清空数据，慎用）
+```
+
+数据存在命名卷里，容器停止或电脑重启都不会丢。之后切换到 Neon / Vercel
+Postgres 时，只需替换 `.env.local` 里的 `DATABASE_URL` 再跑一次 `npm run db:migrate`。
 
 ## 目录结构
 

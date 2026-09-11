@@ -142,13 +142,13 @@ interface Order {
 ### 阶段 0：命名与初始化（0.5 天）
 - [x] 确定产品名，更新 `package.json` name、首页标题、README
 - [x] 安装 3D、校验依赖（`three` / `@react-three/*` / `zod` 已装）
-- [ ] 安装认证、数据库依赖（`next-auth` / `drizzle` / `bcryptjs`，阶段 0.5 用）
+- [x] 安装认证、数据库依赖（`next-auth` / `drizzle` / `bcryptjs`，阶段 0.5 用）
 
 ### 阶段 0.5：账号系统（1–2 天）
-- [ ] Vercel Postgres 接入 + Drizzle schema（`users` 表，username / phone 唯一约束）
-- [ ] Auth.js v5 Credentials Provider 配置，密码 bcrypt/argon2 哈希
-- [ ] 注册页（账号名 + 手机号 + 密码）、登录页（账号名 + 密码）
-- [ ] session 保护下单接口，登录后可查「我的订单」
+- [x] Postgres 接入 + Drizzle schema（`users` 表，username / phone 唯一约束；迁移 `drizzle/0000_*.sql`）
+- [x] Auth.js v5 Credentials Provider 配置，密码 bcrypt 哈希（`src/auth.ts`）
+- [x] 注册页（账号名 + 手机号 + 密码，`/register`）、登录页（账号名 + 密码，`/login`）
+- [x] session 保护「我的订单」页（`/orders`，未登录跳转登录）；`src/lib/session.ts` 提供 `requireUser` 供下单接口复用
 
 ### 阶段 1：3D 预览能力（1–2 天）
 - [x] 封装 `ModelViewer` 组件（按扩展名分发加载 STL / GLB / GLTF / 3MF，支持旋转/缩放/平移）
