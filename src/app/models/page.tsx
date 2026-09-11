@@ -11,13 +11,7 @@ export default function ModelsPage() {
   return (
     <Container className="flex min-h-screen flex-col gap-6 py-10">
       <div>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          ← 返回首页
-        </Link>
-        <h1 className="mt-4 text-2xl font-bold sm:text-3xl">模型库（示例）</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">模型库（示例）</h1>
         <p className="mt-2 text-gray-500">
           阶段 1 预览测试用。点击任意模型进入 3D 预览，验证加载与交互效果。
         </p>

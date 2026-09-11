@@ -16,12 +16,6 @@ export default async function LoginPage() {
 
   return (
     <Container className="flex min-h-screen max-w-md flex-col justify-center gap-6 py-12">
-      <Link
-        href="/"
-        className="text-sm text-gray-500 transition-colors hover:text-brand"
-      >
-        ← 返回首页
-      </Link>
       <div className="text-center">
         <h1 className="text-2xl font-bold">登录 PickPrint</h1>
         <p className="mt-2 text-sm text-gray-500">用账号名和密码登录。</p>
