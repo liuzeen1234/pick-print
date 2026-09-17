@@ -32,11 +32,19 @@ export default async function OrdersPage() {
         <LogoutButton />
       </div>
 
-      <div className="rounded-lg border border-gray-200 p-4 text-sm dark:border-gray-800">
-        <p>
-          账号：<span className="font-medium">{name}</span>
-        </p>
-        <p className="mt-1 text-gray-500">下单默认联系手机号：{phone}</p>
+      <div className="flex items-start justify-between gap-4 rounded-lg border border-gray-200 p-4 text-sm dark:border-gray-800">
+        <div>
+          <p>
+            账号：<span className="font-medium">{name}</span>
+          </p>
+          <p className="mt-1 text-gray-500">下单默认联系手机号：{phone}</p>
+        </div>
+        <Link
+          href="/account/change-password"
+          className="inline-flex shrink-0 items-center justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:hover:bg-gray-800"
+        >
+          更改密码
+        </Link>
       </div>
 
       {userOrders.length === 0 ? (

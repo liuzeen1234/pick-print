@@ -37,6 +37,22 @@ export const loginSchema = z.object({
   password: passwordSchema,
 });
 
+// 更改密码：当前密码 + 两次新密码（需一致）
+export const changePasswordSchema = z
+  .object({
+    currentPassword: passwordSchema,
+    newPassword: passwordSchema,
+    confirmPassword: passwordSchema,
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "两次输入的新密码不一致",
+    path: ["confirmPassword"],
+  })
+  .refine((data) => data.newPassword !== data.currentPassword, {
+    message: "新密码不能与当前密码相同",
+    path: ["newPassword"],
+  });
+
 export const MATERIAL_OPTIONS = ["PLA", "PETG"] as const;
 export const COLOR_OPTIONS = ["白色", "黑色", "灰色", "红色", "蓝色"] as const;
 
@@ -76,5 +92,6 @@ export const updateOpLevelSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type UpdateOpLevelInput = z.infer<typeof updateOpLevelSchema>;
