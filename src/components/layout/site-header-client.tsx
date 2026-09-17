@@ -6,16 +6,24 @@ import { usePathname } from "next/navigation";
 /**
  * 顶部栏的客户端渲染部分。
  * - 左上角：返回首页按钮，位于首页时隐藏。
- * - 右上角：“我的”入口，已在目标页面时隐藏，避免指向自身的多余入口。
+ * - 右上角：管理员的“管理”入口 + “我的”入口，已在目标页面时隐藏，避免指向自身的多余入口。
  */
-export function SiteHeaderClient({ href }: { href: string }) {
+export function SiteHeaderClient({
+  href,
+  isAdmin = false,
+}: {
+  href: string;
+  isAdmin?: boolean;
+}) {
   const pathname = usePathname();
 
+  const adminHref = "/admin/users";
   const showHome = pathname !== "/";
   const showMine = pathname !== href;
+  const showAdmin = isAdmin && pathname !== adminHref;
 
-  // 两个按钮都不显示时（例如首页且 href 也是 "/"）不渲染顶部栏。
-  if (!showHome && !showMine) {
+  // 所有按钮都不显示时不渲染顶部栏。
+  if (!showHome && !showMine && !showAdmin) {
     return null;
   }
 
@@ -34,16 +42,25 @@ export function SiteHeaderClient({ href }: { href: string }) {
             <span />
           )}
 
-          {showMine ? (
-            <Link
-              href={href}
-              className="pointer-events-auto inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white/80 px-3 py-1.5 text-sm font-medium backdrop-blur transition-colors hover:bg-gray-100 dark:bg-gray-900/80 dark:hover:bg-gray-800"
-            >
-              我的
-            </Link>
-          ) : (
-            <span />
-          )}
+          <div className="flex items-center gap-2">
+            {showAdmin ? (
+              <Link
+                href={adminHref}
+                className="pointer-events-auto inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white/80 px-3 py-1.5 text-sm font-medium backdrop-blur transition-colors hover:bg-gray-100 dark:bg-gray-900/80 dark:hover:bg-gray-800"
+              >
+                管理
+              </Link>
+            ) : null}
+
+            {showMine ? (
+              <Link
+                href={href}
+                className="pointer-events-auto inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white/80 px-3 py-1.5 text-sm font-medium backdrop-blur transition-colors hover:bg-gray-100 dark:bg-gray-900/80 dark:hover:bg-gray-800"
+              >
+                我的
+              </Link>
+            ) : null}
+          </div>
         </div>
       </header>
       {/* 占位块：与固定顶部栏等高，避免内容被遮挡（首页无顶部栏时不渲染）。 */}

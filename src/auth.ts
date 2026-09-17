@@ -49,6 +49,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           id: user.id,
           name: user.username,
           phone: user.phone,
+          opLevel: user.opLevel,
         };
       },
     }),
@@ -59,6 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id as string;
         token.username = user.name ?? undefined;
         token.phone = (user as { phone?: string }).phone;
+        token.opLevel = (user as { opLevel?: number }).opLevel;
       }
       return token;
     },
@@ -67,6 +69,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
         session.user.name = token.username as string;
         session.user.phone = token.phone as string;
+        session.user.opLevel = (token.opLevel as number | undefined) ?? 1;
       }
       return session;
     },

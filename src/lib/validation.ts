@@ -64,6 +64,17 @@ export const createOrderSchema = z.object({
   contactAddress: z.string().trim().min(1, "请输入收货地址").max(200, "收货地址最多 200 个字符"),
 });
 
+// 后台调整用户 op 等级：目标用户 id + 新的等级（1-4）
+export const updateOpLevelSchema = z.object({
+  userId: z.string().uuid("用户标识不合法"),
+  opLevel: z
+    .number()
+    .int("op 等级必须是整数")
+    .min(1, "op 等级最小为 1")
+    .max(4, "op 等级最大为 4"),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
+export type UpdateOpLevelInput = z.infer<typeof updateOpLevelSchema>;
