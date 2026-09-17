@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 /**
  * 用户表。
@@ -16,5 +16,35 @@ export const users = pgTable("users", {
     .defaultNow(),
 });
 
+/**
+ * 订单表。订单金额、重量和模型标题均为下单时的快照，避免后续目录调整影响历史记录。
+ */
+export const orders = pgTable(
+  "orders",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    modelId: text("model_id").notNull(),
+    modelTitle: text("model_title").notNull(),
+    material: text("material").notNull(),
+    color: text("color").notNull(),
+    quantity: integer("quantity").notNull(),
+    estimatedWeightGrams: integer("estimated_weight_grams").notNull(),
+    priceCents: integer("price_cents").notNull(),
+    contactName: text("contact_name").notNull(),
+    contactPhone: text("contact_phone").notNull(),
+    contactAddress: text("contact_address").notNull(),
+    status: text("status").notNull().default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("orders_user_created_at_idx").on(table.userId, table.createdAt)],
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type Order = typeof orders.$inferSelect;
+export type NewOrder = typeof orders.$inferInsert;

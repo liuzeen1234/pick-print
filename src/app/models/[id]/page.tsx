@@ -49,7 +49,9 @@ export default async function ModelDetailPage({ params }: Params) {
         </div>
 
         <div className="mt-2 flex gap-3">
-          <Button>选材质下单</Button>
+          <Link href={`/orders/new?modelId=${model.id}`}>
+            <Button>选材质下单</Button>
+          </Link>
           <Link href="/models">
             <Button variant="outline">返回列表</Button>
           </Link>
