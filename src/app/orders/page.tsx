@@ -62,25 +62,30 @@ export default async function OrdersPage() {
       ) : (
         <ul className="space-y-4">
           {userOrders.map((order) => (
-            <li key={order.id} className="rounded-lg border p-5 dark:border-gray-800">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <h2 className="font-semibold">{order.modelTitle}</h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {order.material} · {order.color} · {order.quantity} 件
-                  </p>
+            <li key={order.id}>
+              <Link
+                href={`/orders/${order.id}`}
+                className="block rounded-lg border p-5 transition-colors hover:border-brand hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand dark:border-gray-800 dark:hover:bg-gray-900"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <h2 className="font-semibold">{order.modelTitle}</h2>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {order.material} · {order.color} · {order.quantity} 件
+                    </p>
+                  </div>
+                  <OrderStatusBadge status={order.status} />
                 </div>
-                <OrderStatusBadge status={order.status} />
-              </div>
-              <div className="mt-4 flex flex-wrap justify-between gap-2 border-t pt-4 text-sm text-gray-500 dark:border-gray-800">
-                <span>预估重量：{order.estimatedWeightGrams} g</span>
-                <span className="font-semibold text-gray-900 dark:text-gray-100">
-                  {formatPrice(order.priceCents)}
-                </span>
-              </div>
-              <p className="mt-2 text-xs text-gray-400">
-                创建于 {order.createdAt.toLocaleString("zh-CN", { dateStyle: "medium", timeStyle: "short" })}
-              </p>
+                <div className="mt-4 flex flex-wrap justify-between gap-2 border-t pt-4 text-sm text-gray-500 dark:border-gray-800">
+                  <span>预估重量：{order.estimatedWeightGrams} g</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {formatPrice(order.priceCents)}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-gray-400">
+                  创建于 {order.createdAt.toLocaleString("zh-CN", { dateStyle: "medium", timeStyle: "short" })}
+                </p>
+              </Link>
             </li>
           ))}
         </ul>
