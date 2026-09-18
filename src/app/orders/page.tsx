@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { OrderStatusBadge } from "@/app/admin/orders/order-status-badge";
 import { Container } from "@/components/ui/container";
 import { db } from "@/lib/db";
 import { orders } from "@/lib/db/schema";
@@ -69,9 +70,7 @@ export default async function OrdersPage() {
                     {order.material} · {order.color} · {order.quantity} 件
                   </p>
                 </div>
-                <span className="rounded-full bg-yellow-50 px-2.5 py-1 text-xs font-medium text-yellow-700">
-                  {order.status === "pending" ? "待人工确认" : order.status}
-                </span>
+                <OrderStatusBadge status={order.status} />
               </div>
               <div className="mt-4 flex flex-wrap justify-between gap-2 border-t pt-4 text-sm text-gray-500 dark:border-gray-800">
                 <span>预估重量：{order.estimatedWeightGrams} g</span>
