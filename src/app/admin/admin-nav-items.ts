@@ -17,4 +17,9 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     label: "用户管理",
     description: "查看用户并调整 op 等级",
   },
+  {
+    href: "/admin/orders",
+    label: "订单管理",
+    description: "查看所有订单并更新状态",
+  },
 ];

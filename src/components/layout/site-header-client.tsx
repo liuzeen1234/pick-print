@@ -20,7 +20,9 @@ export function SiteHeaderClient({
   const adminHref = "/admin/users";
   const showHome = pathname !== "/";
   const showMine = pathname !== href;
-  const showAdmin = isAdmin && pathname !== adminHref;
+  // 已经在后台任意页面时隐藏“管理”入口，后台内部由侧边栏负责导航
+  const showAdmin =
+    isAdmin && pathname !== "/admin" && !pathname.startsWith("/admin/");
 
   // 所有按钮都不显示时不渲染顶部栏。
   if (!showHome && !showMine && !showAdmin) {

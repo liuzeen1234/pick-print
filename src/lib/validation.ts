@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 /**
  * 账号系统的输入校验规则。前后端复用同一套 schema，保证一致性。
  */
@@ -90,8 +89,22 @@ export const updateOpLevelSchema = z.object({
     .max(4, "op 等级最大为 4"),
 });
 
+/** 订单状态最大长度，兼顾预设与自定义状态。 */
+export const ORDER_STATUS_MAX_LENGTH = 20;
+
+// 后台调整订单状态：订单 id + 新状态（预设或自定义文本，非空且不超长）
+export const updateOrderStatusSchema = z.object({
+  orderId: z.string().uuid("订单标识不合法"),
+  status: z
+    .string()
+    .trim()
+    .min(1, "请输入订单状态")
+    .max(ORDER_STATUS_MAX_LENGTH, `订单状态最多 ${ORDER_STATUS_MAX_LENGTH} 个字符`),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type UpdateOpLevelInput = z.infer<typeof updateOpLevelSchema>;
+export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;

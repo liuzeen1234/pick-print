@@ -130,7 +130,9 @@ interface Order {
   quantity: number;
   price: number;
   contact: { name: string; phone: string; address: string };
-  status: "pending" | "printing" | "shipped" | "done" | "cancelled";
+  // 预设：pending / confirmed / printing / shipped / completed / cancelled
+  // 也允许后台填写自定义状态文本（存库为自由文本，≤ 20 字）
+  status: string;
   createdAt: string;
 }
 ```
@@ -170,7 +172,13 @@ interface Order {
 - [x] `POST /api/orders` 创建订单，订单查询页
 
 ### 阶段 4：后台与运营（视情况）
-- [ ] 简易订单管理（查看/更新状态）
+- [x] 管理后台框架：`/admin` 布局统一鉴权（仅 op 等级 ≥ 4 可进入）+ 侧边栏导航（`admin-nav-items.ts`）
+- [x] 用户管理（`/admin/users`）：列出所有用户并调整 op 等级
+- [x] 订单管理（`/admin/orders`）：列出所有订单及状态，点击进入订单详情
+  - [x] 订单列表页：表格展示模型 / 下单账号 / 规格 / 金额 / 状态徽标 / 下单时间
+  - [x] 订单详情页（`/admin/orders/[id]`）：完整订单与联系/收货信息 + 状态更新控件
+  - [x] 状态更新接口 `PATCH /api/admin/orders`（管理员鉴权，`GET` 列出所有订单）
+  - [x] 状态支持**预设 + 自定义**：预设枚举（待人工确认/已确认/打印中/已发货/已完成/已取消）下拉直选，另可输入自定义状态文本（非空、≤ 20 字）；徽标对未知状态回退中性配色
 
 ### 阶段 5：上线（1 天）
 - [ ] 部署到 Vercel + Vercel Postgres

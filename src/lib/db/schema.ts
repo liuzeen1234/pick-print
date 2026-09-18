@@ -22,6 +22,41 @@ export const users = pgTable("users", {
 export const ADMIN_OP_LEVEL = 4;
 
 /**
+ * 订单状态取值。存库为英文枚举，展示时映射为中文。
+ * - pending：待人工确认（新订单默认）
+ * - confirmed：已确认
+ * - printing：打印中
+ * - shipped：已发货
+ * - completed：已完成
+ * - cancelled：已取消
+ */
+export const ORDER_STATUSES = [
+  "pending",
+  "confirmed",
+  "printing",
+  "shipped",
+  "completed",
+  "cancelled",
+] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+/** 订单状态的中文展示名。 */
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: "待人工确认",
+  confirmed: "已确认",
+  printing: "打印中",
+  shipped: "已发货",
+  completed: "已完成",
+  cancelled: "已取消",
+};
+
+/** 将任意状态字符串映射为中文展示名，未知值原样返回。 */
+export function formatOrderStatus(status: string) {
+  return ORDER_STATUS_LABELS[status as OrderStatus] ?? status;
+}
+
+/**
  * 订单表。订单金额、重量和模型标题均为下单时的快照，避免后续目录调整影响历史记录。
  */
 export const orders = pgTable(
