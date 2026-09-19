@@ -4,13 +4,12 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { ModelViewerClient } from "@/components/model/ModelViewerClient";
-import { getSampleModel, SAMPLE_MODELS } from "@/lib/sample-models";
+import { getSampleModel } from "@/lib/sample-models";
 
 type Params = { params: Promise<{ id: string }> };
 
-export function generateStaticParams() {
-  return SAMPLE_MODELS.map((m) => ({ id: m.id }));
-}
+// 目录可在后台动态增删，改为按需渲染而非构建期静态生成。
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

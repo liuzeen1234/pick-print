@@ -102,9 +102,39 @@ export const updateOrderStatusSchema = z.object({
     .max(ORDER_STATUS_MAX_LENGTH, `订单状态最多 ${ORDER_STATUS_MAX_LENGTH} 个字符`),
 });
 
+// 模型标识：小写字母/数字/连字符，与既有 modelId 规则一致，作为文件名与路由片段
+export const modelIdSchema = z
+  .string()
+  .trim()
+  .min(1, "请输入模型标识")
+  .max(100, "模型标识最多 100 个字符")
+  .regex(/^[a-z0-9-]+$/, "模型标识只能包含小写字母、数字和连字符");
+
+export const MODEL_FORMAT_OPTIONS = ["stl", "3mf", "glb", "gltf"] as const;
+
+// 后台上传模型的元数据。格式由服务端从文件扩展名自动识别，不在表单中提交。
+export const uploadModelSchema = z.object({
+  id: modelIdSchema,
+  title: z.string().trim().min(1, "请输入模型名称").max(100, "模型名称最多 100 个字符"),
+  description: z.string().trim().max(300, "描述最多 300 个字符").optional().default(""),
+  estimatedWeightGrams: z
+    .number()
+    .int("预估重量必须是整数")
+    .min(1, "预估重量至少为 1 克")
+    .max(100000, "预估重量过大"),
+  commercialAllowed: z.boolean(),
+});
+
+// 后台删除模型：按标识删除
+export const deleteModelSchema = z.object({
+  id: modelIdSchema,
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 export type UpdateOpLevelInput = z.infer<typeof updateOpLevelSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
+export type UploadModelInput = z.infer<typeof uploadModelSchema>;
+export type DeleteModelInput = z.infer<typeof deleteModelSchema>;

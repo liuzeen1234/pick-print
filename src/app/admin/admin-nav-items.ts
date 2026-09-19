@@ -22,4 +22,9 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     label: "订单管理",
     description: "查看所有订单并更新状态",
   },
+  {
+    href: "/admin/models",
+    label: "模型管理",
+    description: "上传或删除模型",
+  },
 ];

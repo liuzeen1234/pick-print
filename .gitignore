@@ -21,3 +21,6 @@ next-env.d.ts
 
 # testing
 /coverage
+
+# runtime-generated model catalog (auto-seeded, mutated by admin uploads/deletes)
+/data
