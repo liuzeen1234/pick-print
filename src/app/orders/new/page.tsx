@@ -16,6 +16,9 @@ export default async function NewOrderPage({ searchParams }: SearchParams) {
   if (!model) {
     notFound();
   }
+  if (model.stock === 0) {
+    redirect(`/models/${model.id}`);
+  }
 
   const session = await auth();
   if (!session?.user) {

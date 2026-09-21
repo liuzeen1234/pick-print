@@ -9,9 +9,10 @@ import {
   PUBLIC_MODELS_DIR,
   readModels,
   removeModel,
+  updateModel,
   type ModelFormat,
 } from "@/lib/models-store";
-import { deleteModelSchema, uploadModelSchema } from "@/lib/validation";
+import { deleteModelSchema, updateModelSchema, uploadModelSchema } from "@/lib/validation";
 
 /**
  * 后台模型管理接口：列出 / 上传 / 删除模型。
@@ -113,6 +114,7 @@ export async function POST(request: Request) {
   }
 
   const weightRaw = form.get("estimatedWeightGrams");
+  const stockRaw = form.get("stock");
   const parsed = uploadModelSchema.safeParse({
     id: form.get("id"),
     title: form.get("title"),
@@ -122,6 +124,10 @@ export async function POST(request: Request) {
         ? Number(weightRaw)
         : NaN,
     commercialAllowed: form.get("commercialAllowed") === "true",
+    stock:
+      typeof stockRaw === "string" && stockRaw.trim() !== ""
+        ? Number(stockRaw)
+        : NaN,
   });
 
   if (!parsed.success) {
@@ -131,7 +137,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { id, title, description, estimatedWeightGrams, commercialAllowed } =
+  const { id, title, description, estimatedWeightGrams, commercialAllowed, stock } =
     parsed.data;
 
   // id 唯一性检查（addModel 也会校验，这里提前给出更明确的错误）
@@ -167,6 +173,7 @@ export async function POST(request: Request) {
       format,
       estimatedWeightGrams,
       commercialAllowed,
+      stock,
     });
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
@@ -176,6 +183,50 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : "保存失败，请稍后重试";
     return NextResponse.json({ message }, { status: 500 });
   }
+}
+
+/** 更新模型信息（名称/描述/预估重量/库存/商用状态）。id、格式、文件不可通过此接口修改。 */
+export async function PATCH(request: Request) {
+  try {
+    await requireAdmin();
+  } catch (error) {
+    const authResponse = handleAuthError(error);
+    if (authResponse) return authResponse;
+    console.error("读取登录状态失败", error);
+    return NextResponse.json({ message: "无法确认登录状态" }, { status: 500 });
+  }
+
+  let payload: unknown;
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json({ message: "请求体不是合法的 JSON" }, { status: 400 });
+  }
+
+  const parsed = updateModelSchema.safeParse(payload);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { message: parsed.error.issues[0]?.message ?? "输入不合法" },
+      { status: 400 },
+    );
+  }
+
+  const { id, title, description, estimatedWeightGrams, commercialAllowed, stock } =
+    parsed.data;
+
+  const updated = updateModel(id, {
+    title,
+    description,
+    estimatedWeightGrams,
+    commercialAllowed,
+    stock,
+  });
+
+  if (!updated) {
+    return NextResponse.json({ message: "模型不存在" }, { status: 404 });
+  }
+
+  return NextResponse.json(updated);
 }
 
 /** 删除一个模型：同时移除目录记录与磁盘文件。 */

@@ -37,6 +37,12 @@ export default async function ModelDetailPage({ params }: Params) {
       <div className="flex w-full flex-col gap-4 lg:w-1/2">
         <h1 className="text-2xl font-bold sm:text-3xl">{model.title}</h1>
         <p className="text-gray-500">{model.description}</p>
+        <p className="text-sm text-gray-500">
+          库存：
+          <span className={model.stock === 0 ? "font-medium text-red-600" : "font-medium text-gray-700"}>
+            {model.stock === 0 ? "已售罄" : `${model.stock} 件`}
+          </span>
+        </p>
 
         <div className="rounded-lg border bg-gray-50 p-4 text-sm text-gray-500">
           <p className="font-medium text-gray-700">操作方式</p>
@@ -48,9 +54,13 @@ export default async function ModelDetailPage({ params }: Params) {
         </div>
 
         <div className="mt-2 flex gap-3">
-          <Link href={`/orders/new?modelId=${model.id}`}>
-            <Button>选材质下单</Button>
-          </Link>
+          {model.stock === 0 ? (
+            <Button disabled>已售罄</Button>
+          ) : (
+            <Link href={`/orders/new?modelId=${model.id}`}>
+              <Button>选材质下单</Button>
+            </Link>
+          )}
           <Link href="/models">
             <Button variant="outline">返回列表</Button>
           </Link>

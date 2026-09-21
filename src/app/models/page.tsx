@@ -35,8 +35,11 @@ export default function ModelsPage() {
               <span className="mt-1 flex-1 text-sm text-gray-500">
                 {model.description}
               </span>
-              <span className="mt-4 text-xs font-medium uppercase tracking-wide text-gray-400">
-                {model.format}
+              <span className="mt-4 flex items-center justify-between text-xs font-medium uppercase tracking-wide text-gray-400">
+                <span>{model.format}</span>
+                <span className={model.stock === 0 ? "text-red-500" : undefined}>
+                  {model.stock === 0 ? "已售罄" : `库存 ${model.stock}`}
+                </span>
               </span>
             </Link>
           </li>

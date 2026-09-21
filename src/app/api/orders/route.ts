@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { orders } from "@/lib/db/schema";
+import { decrementStock, incrementStock } from "@/lib/models-store";
 import { calculateOrderEstimate } from "@/lib/pricing";
 import { getSampleModel } from "@/lib/sample-models";
 import { requireUser, UnauthorizedError } from "@/lib/session";
@@ -42,11 +43,19 @@ export async function POST(request: Request) {
   if (!model.commercialAllowed) {
     return NextResponse.json({ message: "该模型暂不支持下单" }, { status: 409 });
   }
+  if (model.stock < input.quantity) {
+    return NextResponse.json({ message: "库存不足，请减少数量或稍后再试" }, { status: 409 });
+  }
 
   const estimate = calculateOrderEstimate({
     baseWeightGrams: model.estimatedWeightGrams,
     quantity: input.quantity,
   });
+
+  // 先扣减库存，再写入订单；扣减失败（并发场景下库存不足）则直接拒绝，不创建订单。
+  if (!decrementStock(model.id, input.quantity)) {
+    return NextResponse.json({ message: "库存不足，请减少数量或稍后再试" }, { status: 409 });
+  }
 
   try {
     const [order] = await db
@@ -68,6 +77,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
+    // 订单写入失败，回滚已扣减的库存，避免库存被无谓占用。
+    incrementStock(model.id, input.quantity);
     console.error("创建订单失败", error);
     const detail =
       process.env.NODE_ENV !== "production" && error instanceof Error

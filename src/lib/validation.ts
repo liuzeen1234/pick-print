@@ -123,11 +123,34 @@ export const uploadModelSchema = z.object({
     .min(1, "预估重量至少为 1 克")
     .max(100000, "预估重量过大"),
   commercialAllowed: z.boolean(),
+  stock: z
+    .number()
+    .int("库存必须是整数")
+    .min(0, "库存不能为负数")
+    .max(1000000, "库存过大"),
 });
 
 // 后台删除模型：按标识删除
 export const deleteModelSchema = z.object({
   id: modelIdSchema,
+});
+
+// 后台编辑模型信息：按标识更新，格式/文件/id 不可通过此接口修改
+export const updateModelSchema = z.object({
+  id: modelIdSchema,
+  title: z.string().trim().min(1, "请输入模型名称").max(100, "模型名称最多 100 个字符"),
+  description: z.string().trim().max(300, "描述最多 300 个字符").optional().default(""),
+  estimatedWeightGrams: z
+    .number()
+    .int("预估重量必须是整数")
+    .min(1, "预估重量至少为 1 克")
+    .max(100000, "预估重量过大"),
+  commercialAllowed: z.boolean(),
+  stock: z
+    .number()
+    .int("库存必须是整数")
+    .min(0, "库存不能为负数")
+    .max(1000000, "库存过大"),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -138,3 +161,4 @@ export type UpdateOpLevelInput = z.infer<typeof updateOpLevelSchema>;
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 export type UploadModelInput = z.infer<typeof uploadModelSchema>;
 export type DeleteModelInput = z.infer<typeof deleteModelSchema>;
+export type UpdateModelInput = z.infer<typeof updateModelSchema>;

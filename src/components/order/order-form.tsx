@@ -17,6 +17,7 @@ type OrderFormProps = {
     id: string;
     title: string;
     estimatedWeightGrams: number;
+    stock: number;
   };
   defaultPhone: string;
   defaultContactName: string;
@@ -44,6 +45,7 @@ export function OrderForm({
     baseWeightGrams: model.estimatedWeightGrams,
     quantity: form.quantity,
   });
+  const maxQuantity = Math.min(20, model.stock);
 
   function update<K extends keyof CreateOrderInput>(
     key: K,
@@ -126,11 +128,14 @@ export function OrderForm({
           数量
           <Input
             min={1}
-            max={20}
+            max={maxQuantity}
             type="number"
             value={form.quantity}
             onChange={(event) => update("quantity", Number(event.target.value))}
           />
+          <span className="block text-xs font-normal text-gray-400">
+            当前库存 {model.stock} 件
+          </span>
         </label>
       </section>
 

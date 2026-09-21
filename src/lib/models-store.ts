@@ -23,6 +23,8 @@ export interface ModelRecord {
   estimatedWeightGrams: number;
   /** 仅允许已确认可商用的模型进入下单流程。 */
   commercialAllowed: boolean;
+  /** 当前可用库存（件）。下单成功后会扣减，库存不足时拒绝下单。 */
+  stock: number;
 }
 
 /** 允许上传的模型格式与对应扩展名。 */
@@ -47,6 +49,7 @@ const SEED_MODELS: ModelRecord[] = [
     format: "stl",
     estimatedWeightGrams: 8,
     commercialAllowed: true,
+    stock: 100,
   },
   {
     id: "godox-x5-cap-3mf",
@@ -56,6 +59,7 @@ const SEED_MODELS: ModelRecord[] = [
     format: "3mf",
     estimatedWeightGrams: 8,
     commercialAllowed: true,
+    stock: 100,
   },
   {
     id: "mouthwash-holder-v2",
@@ -65,6 +69,7 @@ const SEED_MODELS: ModelRecord[] = [
     format: "stl",
     estimatedWeightGrams: 35,
     commercialAllowed: true,
+    stock: 100,
   },
   {
     id: "planter-column-v1",
@@ -74,6 +79,7 @@ const SEED_MODELS: ModelRecord[] = [
     format: "stl",
     estimatedWeightGrams: 120,
     commercialAllowed: true,
+    stock: 100,
   },
   {
     id: "vacuum-cover-v7",
@@ -83,6 +89,7 @@ const SEED_MODELS: ModelRecord[] = [
     format: "stl",
     estimatedWeightGrams: 55,
     commercialAllowed: true,
+    stock: 100,
   },
   {
     id: "canopy-ant",
@@ -92,6 +99,7 @@ const SEED_MODELS: ModelRecord[] = [
     format: "stl",
     estimatedWeightGrams: 180,
     commercialAllowed: true,
+    stock: 100,
   },
   {
     id: "3dbenchy",
@@ -101,6 +109,7 @@ const SEED_MODELS: ModelRecord[] = [
     format: "stl",
     estimatedWeightGrams: 15,
     commercialAllowed: true,
+    stock: 100,
   },
 ];
 
@@ -127,7 +136,8 @@ function isModelRecord(value: unknown): value is ModelRecord {
     typeof v.src === "string" &&
     typeof v.format === "string" &&
     typeof v.estimatedWeightGrams === "number" &&
-    typeof v.commercialAllowed === "boolean"
+    typeof v.commercialAllowed === "boolean" &&
+    typeof v.stock === "number"
   );
 }
 
@@ -172,6 +182,32 @@ export function addModel(record: ModelRecord): ModelRecord {
   return record;
 }
 
+/** 允许通过 updateModel 修改的字段：不包含 id / src / format，这些与磁盘文件绑定。 */
+export type ModelUpdatableFields = Partial<
+  Pick<
+    ModelRecord,
+    "title" | "description" | "estimatedWeightGrams" | "commercialAllowed" | "stock"
+  >
+>;
+
+/**
+ * 更新模型的元数据（名称、描述、预估重量、库存、商用状态）。
+ * 不允许通过此方法修改 id / src / format（文件绑定字段）。
+ * 模型不存在时返回 undefined。
+ */
+export function updateModel(
+  id: string,
+  patch: ModelUpdatableFields,
+): ModelRecord | undefined {
+  const models = readModels();
+  const index = models.findIndex((m) => m.id === id);
+  if (index === -1) return undefined;
+  const updated: ModelRecord = { ...models[index], ...patch };
+  models[index] = updated;
+  writeStore(models);
+  return updated;
+}
+
 /**
  * 删除模型记录。返回被删除的记录（不存在则返回 undefined）。
  * 不在此处删除磁盘文件，由调用方决定，避免存储层耦合文件系统副作用。
@@ -183,6 +219,35 @@ export function removeModel(id: string): ModelRecord | undefined {
   const [removed] = models.splice(index, 1);
   writeStore(models);
   return removed;
+}
+
+/**
+ * 扣减指定模型的库存（下单成功时调用）。
+ * 库存不足或模型不存在时返回 false，不做任何修改；成功扣减返回 true。
+ */
+export function decrementStock(id: string, quantity: number): boolean {
+  const models = readModels();
+  const index = models.findIndex((m) => m.id === id);
+  if (index === -1) return false;
+  const model = models[index];
+  if (model.stock < quantity) return false;
+  models[index] = { ...model, stock: model.stock - quantity };
+  writeStore(models);
+  return true;
+}
+
+/**
+ * 增加指定模型的库存（用于订单创建失败时回滚已扣减的库存）。
+ * 模型不存在时返回 false。
+ */
+export function incrementStock(id: string, quantity: number): boolean {
+  const models = readModels();
+  const index = models.findIndex((m) => m.id === id);
+  if (index === -1) return false;
+  const model = models[index];
+  models[index] = { ...model, stock: model.stock + quantity };
+  writeStore(models);
+  return true;
 }
 
 export { PUBLIC_MODELS_DIR };
